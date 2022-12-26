@@ -1,12 +1,8 @@
 import WalletBalance from '../components/WalletBalance';
 import { useEffect, useState } from 'react';
-import { web3 } from '../provider/web3';
-import Luctq from '../artifacts/contracts/NFT/Luctq.sol/Luctq.json';
-
-const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-
-// // get the smart contract
-const contract = new web3.eth.Contract(Luctq.abi, contractAddress);
+import { getRPCErrorMessage } from '../utils/errorMessge';
+import { getCurrentAccount, contract, web3, isOwner } from '../provider/web3';
+import ApproveMintNFT from './ApproveMintNFT';
 
 function Home() {
   const [totalMinted, setTotalMinted] = useState(0);
@@ -15,35 +11,28 @@ function Home() {
   }, []);
 
   const totalNFTMinted = async () => {
-    const count = await contract.methods.lastestTokenId().call();
-    setTotalMinted(parseInt(count));
-  };
-
-  const catchError = async () => {
     try {
-      const tokenURI = await contract.methods.tokenURI(10).call();
+      const count = await contract.methods.lastestTokenId().call();
+      setTotalMinted(parseInt(count));
     } catch (e) {
-      const data = e.data;
-      const txHash = Object.keys(data)[0]; // TODO improve
-      const reason = data[txHash].reason;
-
-      console.log(reason);
+      alert(getRPCErrorMessage(e));
     }
   };
 
   return (
-    <div>
-      <WalletBalance />
-      <button className='btn btn-danger' onClick={() => catchError()}>
-        catchError
-      </button>
-      <div></div>
-      <div className='w-full m-5'>
+    <div className='row'>
+      <div className='card m-5 p-2 col-4 d-flex flex-column gap-3'>
+        <img src='logo.png' alt='LOGO' height={150} className='mx-auto' />
+        <WalletBalance />
+        <ApproveMintNFT />
+      </div>
+      <div className='container m-5 col'>
+        <h1>All NFT</h1>
         <div className='row gy-5'>
           {Array(totalMinted + 1)
             .fill(0)
             .map((_, i) => (
-              <div key={i} className='col'>
+              <div key={i} className='col-md-4'>
                 <NFTImage tokenId={i} totalNFTMinted={totalNFTMinted} />
               </div>
             ))}
@@ -54,9 +43,9 @@ function Home() {
 }
 
 function NFTImage({ tokenId, totalNFTMinted }) {
-  const contentId = 'QmTBxFm3SU3pmWQgGzb2ApZe9oMD6amZCAkyVa6HyvMDxB';
+  const contentId = 'QmQqQrqQF1eP1KADgQaMA4YBCw27anDHvYtPNfrW36tc8z';
   const metadataURI = `${contentId}/${tokenId}.json`;
-  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}.png`;
+  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}.svg`;
 
   const [isMinted, setIsMinted] = useState(false);
   useEffect(() => {
@@ -64,22 +53,40 @@ function NFTImage({ tokenId, totalNFTMinted }) {
   }, [isMinted]);
 
   const getMintedStatus = async () => {
-    const result = await contract.methods.isContentOwned(tokenId).call();
-    setIsMinted(result);
+    try {
+      const result = await contract.methods.isContentOwned(tokenId).call();
+      setIsMinted(result);
+    } catch (e) {
+      alert(getRPCErrorMessage(e));
+    }
   };
 
+  // Min token for current account
   const mintToken = async () => {
-    const recipient = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC';
-    const result = await contract.methods
-      .mintNFT(recipient, metadataURI)
-      .send({ from: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' });
-    getMintedStatus();
-    totalNFTMinted();
+    try {
+      // get current account is connecting with metamask
+      const currentAccount = await getCurrentAccount();
+      if (await isOwner(currentAccount)) {
+        const result = await contract.methods
+          .mintNFT(currentAccount, metadataURI)
+          .send({ from: currentAccount });
+        getMintedStatus();
+        totalNFTMinted();
+      } else {
+        alert('Only owner or aprrove account can mint NFT');
+      }
+    } catch (e) {
+      alert(e);
+    }
   };
 
   async function getURI() {
-    const uri = await contract.methods.tokenURI(tokenId).call();
-    alert(uri);
+    try {
+      const uri = await contract.methods.tokenURI(tokenId).call();
+      alert(uri);
+    } catch (e) {
+      alert(e);
+    }
   }
   return (
     <div className='card' style={{ width: '18rem' }}>

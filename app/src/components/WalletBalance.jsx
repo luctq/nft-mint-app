@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { web3 } from '../provider/web3';
+import { getCurrentAccount } from '../provider/web3';
 function WalletBalance() {
   const [balance, setBalance] = useState();
 
   const getBalance = async () => {
-    const [account] = await window.ethereum.request({
-      method: 'eth_requestAccounts',
-    });
-    const balance = await web3.eth.getBalance('account');
+    const account = await getCurrentAccount();
+    const balance = await web3.eth.getBalance(account);
 
     setBalance(web3.utils.fromWei(balance, 'ether'));
   };
