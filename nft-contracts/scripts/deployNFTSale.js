@@ -7,12 +7,12 @@
 const hre = require('hardhat');
 
 async function main() {
-  const contractLuctqNFT = await hre.ethers.getContractFactory(
-    'contracts/NFT/Luctq.sol:Luctq'
+  const contractLuctqNFTSale = await hre.ethers.getContractFactory(
+    'contracts/NFT/LuctqSale.sol:LuctqSale'
   );
-  const luctqNFT = await contractLuctqNFT.deploy();
-  await luctqNFT.deployed();
-  console.log('LuctqNFT was deployed to: ', luctqNFT.address);
+  const luctqNFTSale = await contractLuctqNFTSale.deploy();
+  await luctqNFTSale.deployed();
+  console.log('LuctqNFTSale was deployed to: ', luctqNFTSale.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -21,7 +21,7 @@ function Home() {
 
   return (
     <div className='row'>
-      <div className='card m-5 p-2 col-4 d-flex flex-column gap-3'>
+      <div className='card shadow m-5 p-2 col-4 d-flex flex-column gap-3'>
         <img src='logo.png' alt='LOGO' height={150} className='mx-auto' />
         <WalletBalance />
         <ApproveMintNFT />
@@ -76,7 +76,7 @@ function NFTImage({ tokenId, totalNFTMinted }) {
         alert('Only owner or aprrove account can mint NFT');
       }
     } catch (e) {
-      alert(e);
+      alert(e.message);
     }
   };
 
@@ -89,7 +89,7 @@ function NFTImage({ tokenId, totalNFTMinted }) {
     }
   }
   return (
-    <div className='card' style={{ width: '18rem' }}>
+    <div className='card shadow' style={{ width: '18rem' }}>
       <img
         className='card-img-top'
         src={isMinted ? imageURI : 'image/placeholder.png'}

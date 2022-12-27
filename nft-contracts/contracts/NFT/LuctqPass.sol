@@ -16,11 +16,23 @@ contract LuctqPass is ERC721Enumerable, Ownable {
     mapping (uint => string) private _tokenURIs;
     mapping (address => bool) private _mintedList;
 
-    bool public isActiveMintPass = true;
+    bool public isActive = true;
     string private _baseURIExtended;
 
     constructor() ERC721("Lucta Mint Pass", "LMT") {}
-    function mintNFT(bytes32[] calldata key) public returns (uint256) {}
+    function mintNFT(bytes32[] calldata key) public returns (uint256) {
+        require(isActive, 'Mint Pass: Mint round is not active');
+        require(_mintedList[msg.sender] != true, "Mint Pass: You already minted a mint pass before");
+
+        _tokenIds.increment();
+
+        uint256 newItemId = _tokenIds.current();
+        _safeMint(msg.sender, newItemId);
+        //        _setTokenURI(newItemId, _tokenURI_);
+        _mintedList[msg.sender] = true;
+
+        return newItemId;
+    }
 
     function burnNFT(uint256 tokenId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721Burnable: caller is not owner nor approved");
